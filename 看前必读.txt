@@ -1,0 +1,104 @@
+第一个项目的App.js是基础 整体没啥东西 
+第二个是真正的项目demo 先玩android吧
+
+These steps are optional and only needed if you want to use the Icon.getImageSource function.
+react-native-vector-icons 看到这句话就不要往下继续写安卓的东西了 不然项目直接崩了
+
+redux我使用的是useContext 结合 useReducer使用的 就是不想整那么多插件还有redux业务逻辑
+
+{props.children}是个好东西呀 组件嵌套神了
+
+react setState 第二个参数是回调emmmmmm忘记了 但是我不用类的写法了 ごめんなさい
+
+发布逻辑 (不是安装安卓的发布逻辑而是RN的因为安卓的会有问题) {
+    0.一定要以管理员身份打开因为jdk这些东西都是放C盘的大部分没有写的权限
+    1.先保证本机的正确的配置了所有的RN环境
+    2.$ keytool -genkey -v -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 1000000 
+    +其中: my-release-key.keystore -- 表示生成签名文件的名称【很重要】
+          -alias --后面的东西也很重要，需要记住，my-key-alias这个名称可以根据自己需求改
+          -validity 10000 --代表这个签名1万天后过期 (我整的一百万天)
+
+     当运行这个命令的时候 需要输入一系列的参数这个口令的密码【一定要记住】   123456 spirit face black  font end bei jing zh-cn 
+     最后一定要写个【是】
+    3.当生成秘钥口令之后，这个签名默认保存到了C:\Program Files (x86)\Java\jdk1.8.0_71\bin 这个文件下 就是你的JDK目录下
+    >注意：请记得妥善地保管好你的密钥库文件，不要上传到版本库或者其它的地方。
+
+    4.把my-release-key.keystore文件放到你工程中的android/app文件夹下。
+    5.编辑android/gradle.properties 在最后并且放入四行代码
+        MYAPP_RELEASE_STORE_FILE=my-release-key.keystore
+        MYAPP_RELEASE_KEY_ALIAS=my-key-alias
+        MYAPP_RELEASE_STORE_PASSWORD=*****
+        MYAPP_RELEASE_KEY_PASSWORD=*****
+    
+    6.编辑你项目目录下的android/app/build.gradle，添加如下的签名配置：...的不需要管
+    android {
+    ...
+    defaultConfig { ... }
+    signingConfigs {
+       + release {
+       +     storeFile file(MYAPP_RELEASE_STORE_FILE)
+       +     storePassword MYAPP_RELEASE_STORE_PASSWORD
+       +     keyAlias MYAPP_RELEASE_KEY_ALIAS
+       +     keyPassword MYAPP_RELEASE_KEY_PASSWORD
+        }
+    }
+    buildTypes {
+        release {
+            ...
+       +     signingConfig signingConfigs.release
+        }
+    }
+ }
+ 7.进入项目的根目录下的android文件夹中cmd，输入./gradlew assembleRelease 开始发布apk的release版本
+    注意：{
+        cd android表示进入android目录（如果你已经在android目录中了那就不用输入了）。
+        ./gradlew assembleRelease在macOS、Linux或是windows的PowerShell环境中表示执行当前目录下的名为gradlew的脚本文件，
+        且其运行参数为assembleRelease，注意这个./不可省略；
+        而在windows的传统CMD命令行下则需要去掉./。
+    }
+8.生成的apk文件在当前项目的\android\app\build\outputs\apk目录中找到app-release.apk，这就是发布完毕之后的完整安装包
+  就可以上传到应用商店去供用户使用啦！ 
+9.每次打包完成之后项目都会删除 my-release-key.keystore文件 所以一定记得要找到这个文件并且重新放在 android/app文件夹下    
+
+}
+
+不好意思 我要用Hooks了 类的形式的redux我是见识过了 组件逻辑写一遍 redux逻辑写一遍 恶心死了
+
+api文件夹是封装请求的 还有接口地址的
+
+"crypto-js": "^3.1.9-1", 版本一定要对 不然那就崩溃~
+"react-native-cookies" 这个插件不要装 装了也没啥用 
+
+关联react-native原生代码
+--https://github.com/joeferraro/react-native-cookies
+react-native link react-native-cookies
+
+--https://github.com/react-native-async-storage/async-storage
+--https://blog.csdn.net/Cui_xing_tian/article/details/89925216
+react-native link @react-native-community/async-storage
+
+
+使用global来控制全局数据 有点恶心了 比如宽高的设置、全局的数据等 因为这个是同步的
+请求的方法也放在global里 不然每次都导出很麻烦
+
+目前redux改变刷新后state的值依然存在已完成 其实就是再封装一个action然后在路由那去判断是否有global
+如果有的话 就去派发 这样的话 就可以触发render然后让组件进行更新 刷新也不会把数据修改掉了
+
+调试工具我选的官方推荐的 --https://blog.csdn.net/qq_39635302/article/details/84876699
+
+骨架屏技术来了 rn-placeholder
+
+打包后无法调接口参考 https://zhuanlan.zhihu.com/p/112953177
+或者使用https就可以了
+react-cookie版本太低的解决方案 https://blog.csdn.net/hxl517116279/article/details/102982200
+
+header部分是自己写的 如果自定义的话需要 position:'absolute'
+
+jsx真是个好东西 数组 真棒
+
+规范：{
+    组件需要function 方法需要箭头函数 _function
+    点击事件使用TouchableOpacity组件 并且透明度使用global.opacity
+    图片需要传3倍图 但是还是按照页面一倍的dp进行计算
+    如果是border等小的宽度直接写数值就行
+}
